@@ -175,3 +175,72 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', revealOnScroll);
     revealOnScroll(); // Initial check
 });
+
+// Education Carousel Functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const educationItems = document.querySelectorAll('.education-item');
+    const prevArrow = document.querySelector('.carousel-arrow-left');
+    const nextArrow = document.querySelector('.carousel-arrow-right');
+    const dots = document.querySelectorAll('.dot');
+    let currentSlide = 0;
+    const totalSlides = educationItems.length;
+
+    // Function to show a specific slide
+    function showSlide(index) {
+        // Remove active class from all items and dots
+        educationItems.forEach(item => item.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+
+        // Add active class to current slide
+        if (educationItems[index]) {
+            educationItems[index].classList.add('active');
+        }
+        if (dots[index]) {
+            dots[index].classList.add('active');
+        }
+
+        // Update arrow states
+        if (prevArrow) {
+            prevArrow.disabled = index === 0;
+        }
+        if (nextArrow) {
+            nextArrow.disabled = index === totalSlides - 1;
+        }
+
+        currentSlide = index;
+    }
+
+    // Previous slide
+    if (prevArrow) {
+        prevArrow.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        });
+    }
+
+    // Next slide
+    if (nextArrow) {
+        nextArrow.addEventListener('click', () => {
+            if (currentSlide < totalSlides - 1) {
+                showSlide(currentSlide + 1);
+            }
+        });
+    }
+
+    // Dot navigation
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            showSlide(index);
+        });
+    });
+
+    // Initialize carousel
+    showSlide(0);
+
+    // Optional: Auto-advance (uncomment if you want automatic sliding)
+    // setInterval(() => {
+    //     const nextIndex = (currentSlide + 1) % totalSlides;
+    //     showSlide(nextIndex);
+    // }, 5000); // Change slide every 5 seconds
+});
