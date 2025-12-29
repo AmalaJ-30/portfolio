@@ -39,30 +39,96 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Form submission handling
-const contactForm = document.querySelector('.contact-form');
+// Form submission handling using Formspree
+// Simple setup: Just replace 'YOUR_FORM_ID' with your Formspree form ID
+// Get it from: https://formspree.io/forms (free account, 50 submissions/month)
+const contactForm = document.getElementById('contactForm');
+const formMessage = document.getElementById('formMessage');
+
 if (contactForm) {
     contactForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         // Get form data
-        const formData = new FormData(this);
-        const name = this.querySelector('input[type="text"]').value;
-        const email = this.querySelector('input[type="email"]').value;
-        const subject = this.querySelector('input[placeholder="Subject"]').value;
-        const message = this.querySelector('textarea').value;
+        const name = document.getElementById('from_name').value.trim();
+        const email = document.getElementById('from_email').value.trim();
+        const subject = document.getElementById('subject').value.trim();
+        const message = document.getElementById('message').value.trim();
         
         // Simple validation
         if (!name || !email || !subject || !message) {
-            alert('Please fill in all fields');
+            showFormMessage('Please fill in all fields', 'error');
             return;
         }
         
-        // Here you would typically send the data to a server
-        // For now, we'll just show a success message
-        alert('Thank you for your message! I\'ll get back to you soon.');
-        this.reset();
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showFormMessage('Please enter a valid email address', 'error');
+            return;
+        }
+        
+        // Show loading state
+        const submitButton = this.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
+        
+        // Send email using Formspree
+        // TODO: Replace 'YOUR_FORM_ID' with your Formspree form endpoint
+        // Example: 'https://formspree.io/f/YOUR_FORM_ID'
+        fetch('https://formspree.io/f/YOUR_FORM_ID', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                email: email,
+                subject: subject,
+                message: message
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                showFormMessage('Thank you for your message! I\'ll get back to you soon.', 'success');
+                contactForm.reset();
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
+                
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    hideFormMessage();
+                }, 5000);
+            } else {
+                throw new Error('Form submission failed');
+            }
+        })
+        .catch(error => {
+            showFormMessage('Sorry, there was an error sending your message. Please try again or email me directly at jiaama752@gmail.com', 'error');
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+            console.error('Form submission error:', error);
+        });
     });
+}
+
+function showFormMessage(message, type) {
+    if (formMessage) {
+        formMessage.textContent = message;
+        formMessage.className = `form-message ${type}`;
+        formMessage.style.display = 'block';
+        
+        // Scroll to message
+        formMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function hideFormMessage() {
+    if (formMessage) {
+        formMessage.style.display = 'none';
+        formMessage.className = 'form-message';
+    }
 }
 
 // Add animation on scroll
@@ -187,6 +253,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to show a specific slide
     function showSlide(index) {
+        // Handle looping - wrap around if index is out of bounds
+        if (index < 0) {
+            index = totalSlides - 1;
+        } else if (index >= totalSlides) {
+            index = 0;
+        }
+
         // Remove active class from all items and dots
         educationItems.forEach(item => item.classList.remove('active'));
         dots.forEach(dot => dot.classList.remove('active'));
@@ -199,32 +272,28 @@ document.addEventListener('DOMContentLoaded', () => {
             dots[index].classList.add('active');
         }
 
-        // Update arrow states
+        // Arrows are always enabled in loop mode
         if (prevArrow) {
-            prevArrow.disabled = index === 0;
+            prevArrow.disabled = false;
         }
         if (nextArrow) {
-            nextArrow.disabled = index === totalSlides - 1;
+            nextArrow.disabled = false;
         }
 
         currentSlide = index;
     }
 
-    // Previous slide
+    // Previous slide (loops to end)
     if (prevArrow) {
         prevArrow.addEventListener('click', () => {
-            if (currentSlide > 0) {
-                showSlide(currentSlide - 1);
-            }
+            showSlide(currentSlide - 1);
         });
     }
 
-    // Next slide
+    // Next slide (loops to beginning)
     if (nextArrow) {
         nextArrow.addEventListener('click', () => {
-            if (currentSlide < totalSlides - 1) {
-                showSlide(currentSlide + 1);
-            }
+            showSlide(currentSlide + 1);
         });
     }
 
@@ -244,3 +313,27 @@ document.addEventListener('DOMContentLoaded', () => {
     //     showSlide(nextIndex);
     // }, 5000); // Change slide every 5 seconds
 });
+
+// Back to Top Button
+const backToTopButton = document.getElementById('backToTop');
+
+if (backToTopButton) {
+    // Show/hide button based on scroll position
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTopButton.classList.add('show');
+        } else {
+            backToTopButton.classList.remove('show');
+        }
+    });
+    
+    // Scroll to top when clicked
+    backToTopButton.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
+
+// Resume link is now handled directly via HTML download attribute
