@@ -336,4 +336,16 @@ if (backToTopButton) {
     });
 }
 
-// Resume link is now handled directly via HTML download attribute
+// Resume link - force download
+const resumeLink = document.getElementById('resume-link');
+if (resumeLink) {
+    resumeLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        const link = document.createElement('a');
+        link.href = 'Amala_Jiagbogu_resume.pdf';
+        link.download = 'Amala_Jiagbogu_Resume.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+}
