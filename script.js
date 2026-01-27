@@ -349,3 +349,65 @@ if (resumeLink) {
         document.body.removeChild(link);
     });
 }
+
+// Projects Carousel Functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const projectCards = document.querySelectorAll('.project-card');
+    const prevArrow = document.querySelector('.project-arrow-left');
+    const nextArrow = document.querySelector('.project-arrow-right');
+    
+    if (projectCards.length <= 2) {
+        // Hide arrows if 2 or fewer projects (they fit side by side)
+        if (prevArrow) prevArrow.style.display = 'none';
+        if (nextArrow) nextArrow.style.display = 'none';
+        return;
+    }
+    
+    let currentIndex = 0;
+    const totalCards = projectCards.length;
+    const cardsPerView = 2; // Always show 2 cards at a time
+    
+    function updateCarousel() {
+        // Hide all cards
+        projectCards.forEach(card => {
+            card.classList.add('hidden');
+        });
+        
+        // Show and position the 2 visible cards
+        const card1Index = currentIndex;
+        const card2Index = (currentIndex + 1) % totalCards;
+        
+        if (projectCards[card1Index]) {
+            projectCards[card1Index].classList.remove('hidden');
+            projectCards[card1Index].style.gridColumn = '1';
+            projectCards[card1Index].style.gridRow = '1';
+        }
+        
+        if (projectCards[card2Index]) {
+            projectCards[card2Index].classList.remove('hidden');
+            projectCards[card2Index].style.gridColumn = '2';
+            projectCards[card2Index].style.gridRow = '1';
+        }
+    }
+    
+    function showNext() {
+        currentIndex = (currentIndex + 1) % totalCards;
+        updateCarousel();
+    }
+    
+    function showPrev() {
+        currentIndex = (currentIndex - 1 + totalCards) % totalCards;
+        updateCarousel();
+    }
+    
+    if (prevArrow) {
+        prevArrow.addEventListener('click', showPrev);
+    }
+    
+    if (nextArrow) {
+        nextArrow.addEventListener('click', showNext);
+    }
+    
+    // Initialize - show first 2 cards
+    updateCarousel();
+});
