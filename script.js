@@ -351,13 +351,14 @@ if (resumeLink) {
 }
 
 // Projects Carousel Functionality
-document.addEventListener('DOMContentLoaded', () => {
+function initializeProjectsCarousel() {
     const projectCards = document.querySelectorAll('.project-card');
     const prevArrow = document.querySelector('.project-arrow-left');
     const nextArrow = document.querySelector('.project-arrow-right');
+    const isMobile = window.innerWidth <= 768;
     
-    if (projectCards.length <= 2) {
-        // Hide arrows if 2 or fewer projects (they fit side by side)
+    if (projectCards.length <= 1) {
+        // Hide arrows if 1 or fewer projects
         if (prevArrow) prevArrow.style.display = 'none';
         if (nextArrow) nextArrow.style.display = 'none';
         return;
@@ -365,38 +366,57 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let currentIndex = 0;
     const totalCards = projectCards.length;
-    const cardsPerView = 2; // Always show 2 cards at a time
+    const cardsPerView = isMobile ? 1 : 2;
     
     function updateCarousel() {
-        // Hide all cards
+        // Hide all cards first
         projectCards.forEach(card => {
             card.classList.add('hidden');
+            card.style.gridColumn = '';
+            card.style.gridRow = '';
         });
         
-        // Show and position the 2 visible cards
-        const card1Index = currentIndex;
-        const card2Index = (currentIndex + 1) % totalCards;
-        
-        if (projectCards[card1Index]) {
-            projectCards[card1Index].classList.remove('hidden');
-            projectCards[card1Index].style.gridColumn = '1';
-            projectCards[card1Index].style.gridRow = '1';
-        }
-        
-        if (projectCards[card2Index]) {
-            projectCards[card2Index].classList.remove('hidden');
-            projectCards[card2Index].style.gridColumn = '2';
-            projectCards[card2Index].style.gridRow = '1';
+        if (isMobile) {
+            // Mobile: show one card at a time
+            if (projectCards[currentIndex]) {
+                projectCards[currentIndex].classList.remove('hidden');
+                projectCards[currentIndex].style.gridColumn = '1';
+                projectCards[currentIndex].style.gridRow = '1';
+            }
+        } else {
+            // Desktop: show 2 cards at a time
+            const card1Index = currentIndex;
+            const card2Index = (currentIndex + 1) % totalCards;
+            
+            if (projectCards[card1Index]) {
+                projectCards[card1Index].classList.remove('hidden');
+                projectCards[card1Index].style.gridColumn = '1';
+                projectCards[card1Index].style.gridRow = '1';
+            }
+            
+            if (projectCards[card2Index]) {
+                projectCards[card2Index].classList.remove('hidden');
+                projectCards[card2Index].style.gridColumn = '2';
+                projectCards[card2Index].style.gridRow = '1';
+            }
         }
     }
     
     function showNext() {
-        currentIndex = (currentIndex + 1) % totalCards;
+        if (isMobile) {
+            currentIndex = (currentIndex + 1) % totalCards;
+        } else {
+            currentIndex = (currentIndex + 1) % totalCards;
+        }
         updateCarousel();
     }
     
     function showPrev() {
-        currentIndex = (currentIndex - 1 + totalCards) % totalCards;
+        if (isMobile) {
+            currentIndex = (currentIndex - 1 + totalCards) % totalCards;
+        } else {
+            currentIndex = (currentIndex - 1 + totalCards) % totalCards;
+        }
         updateCarousel();
     }
     
@@ -408,6 +428,29 @@ document.addEventListener('DOMContentLoaded', () => {
         nextArrow.addEventListener('click', showNext);
     }
     
-    // Initialize - show first 2 cards
+    // Initialize immediately
     updateCarousel();
-});
+    
+    // Handle window resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            const nowMobile = window.innerWidth <= 768;
+            if (nowMobile !== isMobile) {
+                currentIndex = 0; // Reset to first card
+                initializeProjectsCarousel();
+            }
+        }, 250);
+    });
+}
+
+// Initialize carousel immediately - use requestAnimationFrame to ensure DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        requestAnimationFrame(initializeProjectsCarousel);
+    });
+} else {
+    // DOM is already ready, initialize on next frame to ensure layout is calculated
+    requestAnimationFrame(initializeProjectsCarousel);
+}
